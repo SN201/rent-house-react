@@ -1,16 +1,44 @@
 import React , {useState} from 'react'
-import { Link } from 'react-router-dom';
+import { Link , useNavigate } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import OAuth from '../components/OAuth';
+import { getAuth ,createUserWithEmailAndPassword , updateProfile   } from "firebase/auth";
+import {db} from '../firebase.config'
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import {toast} from 'react-toastify'
 const SignUp = () => {
   const [showPassword,setShowPassword] = useState(false);
   const [formData , setFormData] =useState({name:"",email : "", password :""});
   const {name,email, password} = formData;
+  const  navigate = useNavigate();
   function onchange(e){
     setFormData((prevState)=>({
       ...prevState , [e.target.id] : e.target.value
     }))
+  }
+  async function onSubmit(e){
+    e.preventDefault();
+    try {
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword (
+        auth
+        ,email
+        , password);
+        updateProfile(auth.currentUser,{
+          displayName : name
+        })
+      const user = userCredential.user;
+      const formDataCopy = {...formData};
+      delete formDataCopy.password;
+      formDataCopy.timestamp = serverTimestamp();
+      await setDoc(doc(db, "users" , user.uid) , formDataCopy)
+      // toast.success("Sigin Up Done successfully !")
+      navigate("/");
+    } catch (error) {
+      toast.error("Something went wrong with Registration ! ")
+
+    }
   }
   return (
     <section>
@@ -24,7 +52,7 @@ const SignUp = () => {
           className='w-full rounded-2xl'/>
         </div>
         <div className='w-full md:w-[67%] lg:w-[40%] lg:ml-20 mt-6'>
-          <form >
+          <form onSubmit={onSubmit}>
           <input type='text' id='name' value={name} placeholder='Full Name' onChange={onchange}
           className='w-full px-4 py-2 text-xl text-gray-700 bg-white border
            border-gray-300 rounded transition ease-in-out mb-6'/>
@@ -55,7 +83,6 @@ const SignUp = () => {
         </div>
         <OAuth/>
           </form>
-
         </div>
        
       </div>
