@@ -1,4 +1,6 @@
 
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useEffect, useState } from 'react';
 import { useLocation , useNavigate } from 'react-router-dom';
 const Header = () => {
   const location = useLocation();
@@ -10,7 +12,18 @@ const Header = () => {
       return false;
     }
   }
-
+  const auth = getAuth();
+const [pageStatus , setPageStatus] = useState("sig-in");
+useEffect(()=>{
+  onAuthStateChanged(auth ,(user)=>{
+    if(user){
+      setPageStatus("Profile");
+    }
+    else{
+      setPageStatus("sig-in");
+    }
+  })
+},[auth])
   return (
     <div className='bg-white border-b shadow-sm sticky top-0 z-50'>
       <header className='flex justify-between items-center px-3 max-w-6xl m-auto'>
@@ -32,8 +45,9 @@ const Header = () => {
             <li className={` transition duration-150 ease-in-out cursor-pointer  ${pathMathRoute("/offers") ? `text-black border border-b-red-600 py-3 `: ` py-3 text-sm font-semibold text-gray-400  
             border-b-[3px] border-b-transparent`}`} onClick={()=>navigate("/offers")}>Offers</li>
 
-            <li className={` transition duration-150 ease-in-out cursor-pointer  ${pathMathRoute("/sig-in") ? `text-black border border-b-red-600 py-3 `: ` py-3 text-sm font-semibold text-gray-400  
-            border-b-[3px] border-b-transparent`}`} onClick={()=>navigate("/sig-in")}>Sign in</li>
+            <li className={` transition duration-150 ease-in-out cursor-pointer 
+             ${ ((pathMathRoute("/profile") )|| (pathMathRoute( "/sign-in"))) ? `text-black border border-b-red-600 py-3 `: ` py-3 text-sm font-semibold text-gray-400  
+            border-b-[3px] border-b-transparent`}`} onClick={()=>navigate("/profile")}>{pageStatus}</li>
 
           </ul>
         </div>
