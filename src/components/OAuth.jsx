@@ -14,8 +14,6 @@ const OAuth = () => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const docRef = doc(db,"users" , user.uid);
-    //   // Set crossOriginOpenerPolicy attribute to "same-origin"
-    // window.crossOriginOpenerPolicy = 'same-origin';
       const docSnap = await getDoc(docRef);
       if(!docSnap.exists()){
         await setDoc(docRef ,{
@@ -24,9 +22,10 @@ const OAuth = () => {
           timestamp : serverTimestamp(),
         });}
         navigate("/");
+      //console.log(result);
     } catch (error) {
       toast.error("Could not Authorize with Google") ; 
-      console.log(error);
+      //console.log(error);
      
     }
   }
