@@ -1,6 +1,16 @@
 import React, { useState } from 'react'
-
+import {toast} from 'react-toastify'
+import Spinner from '../components/Spinner';
+import { getAuth} from "firebase/auth";
+import {v4 as uuidv4} from 'uuid';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { collection, serverTimestamp, addDoc } from 'firebase/firestore';
+import { db } from '../firebase.config';
+import { useNavigate } from 'react-router-dom';
 const CreateListing = () => {
+    const auth = getAuth();
+    const navigate = useNavigate();
+    const [geolocationEnabled, setGeolocationEnabled] = useState(true);    const [loading , setLoading] = useState(false);
     const [formData , setFormData] = useState({
         type:"rent",
         name:"",
@@ -13,9 +23,151 @@ const CreateListing = () => {
         offer:true,
         regularPrice:0,
         discountedPrice:0,
+        latitude:0,
+        longitude:0,
+        images:{},
     })
-    const {type , name ,bedrooms ,bathrooms ,parking ,furnished ,address ,description ,offer ,regularPrice ,discountedPrice } = formData ; 
-    function onChange(){}
+    const {type , name ,bedrooms ,bathrooms ,parking ,furnished ,address ,description ,offer ,regularPrice ,discountedPrice , latitude ,longitude , images} = formData ; 
+    function onChange(e){
+        let boolean = null;
+        if(e.target.value === "true"){
+            boolean = true;
+        }
+        if(e.target.value === "false"){
+            boolean = false;
+        }
+        if(e.target.files){
+           setFormData((prevState)=>({
+            ...prevState , 
+            images:e.target.files
+           }))
+            }
+        
+        if(!e.target.files){
+            setFormData((prevState)=>({
+                ...prevState , 
+                [e.target.id] : boolean ?? e.target.value,
+            }))
+
+    }
+}
+const key = "9dRlHkI1LHndCwLKVM9wiEkOIOURybqx";
+async function onSubmit (e){
+    e.preventDefault();
+    setLoading(true);
+    console.log("In fuctiion ")
+
+    if(+discountedPrice >= regularPrice){
+    setLoading(false);
+    toast.error("Discounted Price needs to less than Regular Price");
+    return ;}
+
+    if(images.length > 6 ){
+        setLoading(false);
+        toast.error("Maximum 6 images is allowed");
+        return ;}
+
+        let geolocation = {};
+        let location;
+        if (geolocationEnabled) {
+        //   const response = await fetch(
+        //     `/search/2/geocode/${address}.json?${key}`
+        //   );
+        const response = await fetch(
+            `https://api.tomtom.com/search/2/geocode/${address}.json?storeResult=false&view=Unified&key=${key}`
+          );
+          const data = await response.json();
+          console.log(data);
+          geolocation.lat = data.results[0]?.position.lat;
+          geolocation.lon = data.results[0]?.position.lon;
+          if(location = data.results.length == 0) {
+            setLoading(false);
+            toast.error("Please Enter a correct Address") ; 
+            return ;
+          }
+          else {
+            geolocation.lat = latitude;
+            geolocation.lon = longitude;
+          }
+
+          
+          
+        }    
+              async function storeImage(image){
+            return new Promise((resolve, reject)=>{
+                const  storage  = getStorage();
+                const filename = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`;
+                const storageRef = ref(storage, filename);
+                const uploadTask = uploadBytesResumable(storageRef, image); 
+        // Register three observers:
+        // 1. 'state_changed' observer, called any time the state changes
+        // 2. Error observer, called on failure
+        // 3. Completion observer, called on successful completion
+        uploadTask.on('state_changed', 
+        (snapshot) => {
+        // Observe state change events such as progress, pause, and resume
+        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+        switch (snapshot.state) {
+        case 'paused':
+        console.log('Upload is paused');
+        break;
+        case 'running':
+        console.log('Upload is running');
+        break;
+        }
+        }, 
+        (error) => {
+        // Handle unsuccessful uploads
+        reject(error)
+        }, 
+        () => {
+        // Handle successful uploads on complete
+        // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+        resolve( downloadURL);
+        });
+        }
+        );
+            });
+
+        }
+        const imgUrls = await Promise.all(
+            [...images].map((image) => storeImage(image))
+          ).catch((error) => {
+            setLoading(false);
+            toast.error("Images not uploaded");
+            return;
+          });
+        
+            console.log(imgUrls)
+
+            const formDataCopy = {
+                ...formData,
+                imgUrls , 
+                geolocation , 
+                timestamp: serverTimestamp(),
+                userRef: auth.currentUser.uid,
+            };
+            delete formDataCopy.images;
+            !formDataCopy.offer && delete formDataCopy.discountedPrice;
+            delete formDataCopy.latitude;
+            delete formDataCopy.longitude;
+           
+                const docRef = await addDoc(collection(db, "listings"), formDataCopy);
+            
+            
+            setLoading(false);
+            toast.success("Listing created");
+            navigate(`/category/${formDataCopy.type}/${docRef.id}`);
+   
+
+}
+
+if(loading){
+    return <Spinner/>
+}
   return (
     <main className='max-w-md px-2 m-auto'>
         <h1 className='text-3xl text-center font-bold mt-6'>Create a Listing</h1>
@@ -34,7 +186,7 @@ const CreateListing = () => {
                 </button>
                 <button type='button'
                  id="type"
-                  value="sale"
+                  value={"rent"}
                    className = {` ml-3 px-7 py-3 font-medium text-sm uppercase 
                    shadow-md rounded hover:shadow-lg focus:shadow-lg 
                    active:shadow-lg transition duration-150  ease-in-out w-full ${type === "sale" ? "bg-white text-black" : "bg-slate-600 text-white" }`}
@@ -141,8 +293,40 @@ const CreateListing = () => {
               required
               className='w-full px-4 py-2 text-xl text-gray-700 
               bg-white border-gray-300 rounded transition duration-150 
-              ease-in-out focus:text-gray-700 focus:bg-white border focus:border-slate-600'/>
+              ease-in-out focus:text-gray-700 focus:bg-white border focus:border-slate-600 text-center'/>
               <div className='flex space-x-6 '></div>
+
+              { !geolocationEnabled && (
+                <div className='flex space-x-6 justify-start mb-6'>
+                    <div>
+                        <p className='text-lg font-semibold'>Latitude</p>
+                        <input type='number'
+                        id='latitude'
+                        value={latitude}
+                        onChange={onChange}
+                        required
+                        min="-180"
+                        max="180"
+                        className='w-full px-4 py-2 text-xl text-gray-700 bg-white border
+                        border-gray-300 rounded transition duration-150 ease-in-out
+                        focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center'/>
+                    </div>
+                    <div>
+                        <p className='text-lg font-semibold'>Longitude</p>
+                        <input type='number'
+                        id='longitude'
+                        value={longitude}
+                        onChange={onChange}
+                        min="-180"
+                        max="180"
+                        required
+                        className='w-full px-4 py-2 text-xl text-gray-700 bg-white border
+                        border-gray-300 rounded transition duration-150 ease-in-out
+                        focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center'/>
+                    </div>
+                </div>
+              )
+              }
             
               <p className='text-lg mt-6  font-semibold'>Description</p>
             <textarea type='text'
@@ -165,7 +349,7 @@ const CreateListing = () => {
                    value={true}
                    className = {` mr-3 px-7 py-3 font-medium text-sm uppercase 
                    shadow-md rounded hover:shadow-lg focus:shadow-lg 
-                   active:shadow-lg transition duration-150  ease-in-out w-full ${!furnished ? "bg-white text-black" : "bg-slate-600 text-white" }`}
+                   active:shadow-lg transition duration-150  ease-in-out w-full ${!offer ? "bg-white text-black" : "bg-slate-600 text-white" }`}
                    onClick={onChange} 
                    >
                     yes
@@ -175,7 +359,7 @@ const CreateListing = () => {
                   value={false}
                    className = {` ml-3 px-7 py-3 font-medium text-sm uppercase 
                    shadow-md rounded hover:shadow-lg focus:shadow-lg 
-                   active:shadow-lg transition duration-150  ease-in-out w-full ${furnished ? "bg-white text-black" : "bg-slate-600 text-white" }`}
+                   active:shadow-lg transition duration-150  ease-in-out w-full ${offer ? "bg-white text-black" : "bg-slate-600 text-white" }`}
                    onClick={onChange} 
                    >
                     no
@@ -239,7 +423,7 @@ const CreateListing = () => {
                 className='w-full px-3 py-1.5 text-gray-700 bg-white border
                  border-gray-300 rounded transition duration-150 ease-in-out focus:bg-white focus:border-slate-600'/>
             </div>
-            <button type='submit' 
+            <button type='submit' onChange={onSubmit} onClick={onSubmit}
             className='mb-6 w-full px-7 py-3 bg-blue-600 text-white font-medium 
             text-sm uppercase  rounded shadow-md hover:bg-blue-700 hover:shadow-lg 
             focus:shadow-lg active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out'
