@@ -73,7 +73,7 @@ useEffect(() =>{
   return (
     <>
     <section className='max-w-6xl mx-auto flex justify-center items-center flex-col'>
-      <h1 className='text-3xl font-bold mt-6 text-center'>My Profile</h1>
+      <h2 className='text-3xl font-bold mt-6 mb-6 text-center'>My Profile</h2>
       <div className='w-full md:w-[50%] mt-6 px-3'>
         <form>
           <input type="text"
@@ -119,7 +119,9 @@ useEffect(() =>{
       {!loading&& listings && listings.length > 0 && (
         <>
         <h1 className='text-3xl text-center font-semibold'>My Listing</h1>
-        <ul>
+        <ul className='sm:grid sm:grid-cols-2 
+        lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5
+        mt-6 mb-6'> 
           {listings.map((listing) =>(
             <ListingItem 
             key={listing.id}
