@@ -3,7 +3,7 @@ import { getAuth, updateProfile } from 'firebase/auth';
 import {db} from '../firebase.config'
 import React , {useState , useEffect} from 'react'
 import { Link, useNavigate } from 'react-router-dom';
-import { collection, doc , getDocs, orderBy, query, updateDoc, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc , getDocs, orderBy, query, updateDoc, where } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 import { FcHome } from "react-icons/fc";
 import ListingItem from '../components/ListingItem';
@@ -47,6 +47,19 @@ try {
 } catch (error) {
   toast.error("Could not update profile details")
 }
+}
+async function onDelete(listingID){
+  if(window.confirm("Are you sure you want to delete ?")){
+    await deleteDoc(doc(db, "listings", listingID))
+    const updatedListing = listings.filter(
+      (listing)=> listing.id !== listingID
+    );
+    setListings(updatedListing);
+    toast.success(" deleted successfully !")
+  }
+}
+function onEdit(listingID) {
+  navigate(`/edite-listing/${listingID}`)
 }
 useEffect(() =>{
   async function  fetchUserListing(){
@@ -127,6 +140,8 @@ useEffect(() =>{
             key={listing.id}
             id={listing.id}
             listing={listing.data}
+            onDelete = {()=>onDelete(listing.id)}
+            onEdit = {()=>onEdit(listing.id)}
             />
           ))}
         </ul>
