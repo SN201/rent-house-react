@@ -59,7 +59,7 @@ async function onDelete(listingID){
   }
 }
 function onEdit(listingID) {
-  navigate(`/edite-listing/${listingID}`)
+  navigate(`/edit-listing/${listingID}`)
 }
 useEffect(() =>{
   async function  fetchUserListing(){
