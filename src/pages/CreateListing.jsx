@@ -10,7 +10,8 @@ import { useNavigate } from 'react-router-dom';
 const CreateListing = () => {
     const auth = getAuth();
     const navigate = useNavigate();
-    const [geolocationEnabled, setGeolocationEnabled] = useState(true);    const [loading , setLoading] = useState(false);
+    const [geolocationEnabled, setGeolocationEnabled] = useState(true);  
+    const [loading , setLoading] = useState(false);
     const [formData , setFormData] = useState({
         type:"rent",
         name:"",
@@ -165,9 +166,9 @@ async function onSubmit (e){
 
 }
 
-if(loading){
-    return <Spinner/>
-}
+            if(loading){
+                return <Spinner/>
+            }    
   return (
     <main className='max-w-md px-2 m-auto'>
         <h1 className='text-3xl text-center font-bold mt-6'>Create a Listing</h1>
