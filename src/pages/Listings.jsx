@@ -9,32 +9,22 @@ import { FaBath } from "react-icons/fa6";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { FaSquareParking } from "react-icons/fa6";
 import { FaChair } from "react-icons/fa";
-// import SwiperCore, {
-//   EffectFade,
-//   Autoplay,
-//   Navigation,
-//   Pagination,
-// } from "swiper";
-// } from "swiper/react";
-//import "swiper/css/bundle";
-// Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
 import { Navigation, Pagination,EffectFade , Autoplay  } from 'swiper/modules';
 import { FaShare } from "react-icons/fa";
-
-
-//import { Swiper, SwiperSlide } from 'swiper/react';
-
+import { getAuth } from 'firebase/auth'
+import Contact from '../components/Contact'
 const Listings = () => {
   
     const params=  useParams()
     const [listing , setListing] = useState(null) 
     const [loading , setLoading] = useState(true) 
-    const [sharirLinkCopied, setSharirLinkCopied] = useState(false) 
-
+    const [sharirLinkCopied, setSharirLinkCopied] = useState(false)
+    const [contactLandlord ,setContactLandlord]  =useState(false)  
+    const auth = getAuth();
     useEffect(()=>{
         async function fetchListing(){
             const docRef = doc(db , "listings" , params.listingID);
@@ -92,7 +82,7 @@ const Listings = () => {
       )}
       <div className=' flex flex-col md:flex-row m-4 max-w-6xl
        lg:m-auto p-4 rounded-lg lg:space-x-4 shadow-lg bg-white '>
-        <div className='  w-full lg-[400px] h-[200px]'>
+        <div className='  w-full '>
         <p className=" text-2xl font-bold mb-3 text-blue-900">
            {listing.name} - ${listing.offer ? listing.discountedPrice
             .toString()
@@ -123,7 +113,7 @@ const Listings = () => {
             <p className='mt-3 mb-3'>
             <span className='font-semibold'> Description</span>   - {listing.description}
             </p>
-            <ul className='flex items-center space-x-2 lg:space-x-10 text-sm font-semibold'>
+            <ul className=' mb-6 flex items-center space-x-2 lg:space-x-10 text-sm font-semibold'>
               <li className='flex items-center whitespace-nowrap'>
                 <FaBath className='text-lg mr-1'/>
                 {+listing.bathrooms > 1 ? `${listing.bathrooms } bedrooms` : `1 bedroom` }
@@ -141,8 +131,22 @@ const Listings = () => {
                 {listing.furnished  ? ` Furnished` : `No Furnished` }
               </li>
             </ul>
+            <div className='mt-6 '>
+             {listing.userRef !== auth.currentUser?.uid && !contactLandlord && (
+                          <button onClick={()=>setContactLandlord(!contactLandlord)}
+                           className="w-full text-white font-medium px-7 py-3 text-center
+                          bg-blue-600 uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg 
+                          focus:bg-blue-700 focus:shadow-lg duration-150 ease-in-out transition ">Contact 
+                          </button>
+             )}  
+            </div>
+            {contactLandlord && (
+              <Contact 
+              userRef={listing.userRef}
+              listing={listing}/>
+            )}
         </div>
-        <div className='bg-blue-300 w-full lg-[400px] h-[200px] overflow-x-hidden'>
+        <div className='bg-blue-300 w-full  overflow-x-hidden'>
 
         </div>
       </div>
