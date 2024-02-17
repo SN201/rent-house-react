@@ -17,6 +17,7 @@ import { Navigation, Pagination,EffectFade , Autoplay  } from 'swiper/modules';
 import { FaShare } from "react-icons/fa";
 import { getAuth } from 'firebase/auth'
 import Contact from '../components/Contact'
+import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 const Listings = () => {
   
     const params=  useParams()
@@ -81,7 +82,7 @@ const Listings = () => {
          border-gray-200 rounded-md bg-white p-1'>Linke Copied</p>
       )}
       <div className=' flex flex-col md:flex-row m-4 max-w-6xl
-       lg:m-auto p-4 rounded-lg lg:space-x-4 shadow-lg bg-white '>
+       lg:m-auto p-4 rounded-lg lg:space-x-5 shadow-lg bg-white '>
         <div className='  w-full '>
         <p className=" text-2xl font-bold mb-3 text-blue-900">
            {listing.name} - ${listing.offer ? listing.discountedPrice
@@ -101,14 +102,14 @@ const Listings = () => {
               rounded-md p-1 text-white text-center font-semibold shadow-md '>
                 {listing.type === 'rent' ? "Rent" : "Sale"}
               </p>
-              <p className='w-full max-w-[200px] bg-green-800 p-1 
+             {listing.offer && ( <div className='w-full max-w-[200px] bg-green-800 p-1 
                rounded-md text-white text-center font-semibold shadow-md ' >
                {listing.offer && (
                 <p>
                    ${+listing.regularPrice - +listing.discountedPrice} discount
                 </p>
                )}
-              </p>
+              </div>)}
             </div>
             <p className='mt-3 mb-3'>
             <span className='font-semibold'> Description</span>   - {listing.description}
@@ -146,8 +147,22 @@ const Listings = () => {
               listing={listing}/>
             )}
         </div>
-        <div className='bg-blue-300 w-full  overflow-x-hidden'>
-
+        <div className='w-full h-[400px] z-10 overflow-x-hidden mt-6 md:mt-0 md:ml-2'>
+        <MapContainer 
+        center={[listing.geolocation.lat , listing.geolocation.lon]} 
+        zoom={13} 
+        scrollWheelZoom={false}
+        style={{ height: "100%", width: "100%" }}>
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <Marker position={[listing.geolocation.lat , listing.geolocation.lon]}>
+                  <Popup>
+                 { listing.address}
+                  </Popup>
+            </Marker>
+         </MapContainer>
         </div>
       </div>
     </main>
