@@ -104,7 +104,7 @@ const Home = () => {
       {saleListings && saleListings.length > 0 && (
           <div className=' m-2 mb-6' >
             <h2 className='px-3 text-2xl mt-6 font-semibold'>
-              Recent Offer
+              Places for Sale 
             </h2>
             <Link to="/category/sale">
               <p className='px-3 text-sm text-blue-600 hover:text-blue-800
@@ -122,7 +122,7 @@ const Home = () => {
       {rentListings && rentListings.length > 0 && (
           <div className=' m-2 mb-6' >
             <h2 className='px-3 text-2xl mt-6 font-semibold'>
-              Recent Offer
+               Places for Rent 
             </h2>
             <Link to="/category/rent">
               <p className='px-3 text-sm text-blue-600 hover:text-blue-800
