@@ -96,6 +96,7 @@ const Home = () => {
                 {offerListings.map((listing)=>(
                   <ListingItem 
                   key={listing.id}
+                  id={listing.id}
                   listing={listing.data} />
                 ))}
               </ul>
@@ -113,7 +114,8 @@ const Home = () => {
               <ul className='sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
                 {saleListings.map((listing)=>(
                   <ListingItem 
-                  key={listing.id}
+                 key={listing.id}
+                  id={listing.id}
                   listing={listing.data} />
                 ))}
               </ul>
@@ -132,6 +134,7 @@ const Home = () => {
                 {rentListings.map((listing)=>(
                   <ListingItem 
                   key={listing.id}
+                  id={listing.id}
                   listing={listing.data} />
                 ))}
               </ul>
