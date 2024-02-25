@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react(), macrosPlugin()],
   resolve: {
     mainFields: [],
+    
   }, build: {
     outDir: 'my-custom-output-directory'
   },rollupOptions: {
