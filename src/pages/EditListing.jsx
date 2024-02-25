@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState , useCallback } from 'react'
 import {toast} from 'react-toastify'
 import Spinner from '../components/Spinner';
 import { getAuth} from "firebase/auth";
@@ -7,16 +7,24 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/
 import {  serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase.config';
 import { useNavigate, useParams } from 'react-router-dom';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 const EditListing = () => {
     const auth = getAuth();
     const navigate = useNavigate();
     const [geolocationEnabled, setGeolocationEnabled] = useState(true);  
     const [loading , setLoading] = useState(false);
     const [listing , setListing] = useState(null);
+    const [number, setNumber] = useState('');
+    const onChangeNumber = useCallback((phoneNumber) => {
+      setNumber(phoneNumber);
+      setFormData({ ...formData, phone: phoneNumber });
+  }, []);
     const [formData , setFormData] = useState({
         type:"rent",
         name:"",
         bedrooms:1,
+        phone:number,
         bathrooms:1,
         parking:false,
         furnished:false,
@@ -30,7 +38,7 @@ const EditListing = () => {
         images:{},
     })
     const {type , name ,bedrooms ,bathrooms ,parking ,furnished 
-      ,address ,description ,offer ,regularPrice
+      ,address ,description ,offer ,regularPrice,phone
        ,discountedPrice , latitude ,longitude , images} = formData ; 
        
        const params = useParams();
@@ -243,6 +251,26 @@ async function onSubmit (e){
               className='w-full px-4 py-2 text-xl text-gray-700 
               bg-white border-gray-300 rounded transition duration-150 
               ease-in-out focus:text-gray-700 focus:bg-white border focus:border-slate-600'/>
+              <br/>
+               <p className='text-lg mt-6 font-semibold'>Phone Number</p>
+               <PhoneInput
+                id='phone'
+                placeholder="Enter phone number"
+                value={phone}
+                onChange={onChangeNumber}
+            />
+                {/* <input type='text'
+                 id='phone'
+                  value={number}
+                  onChange={onChangeNumber}
+                  placeholder='Phone Number'
+                  pattern="[0-9]*" 
+                 maxLength="32"
+                  minLength="10"
+                  required
+                  className='w-full px-4 py-2 text-xl text-gray-700 
+                  bg-white border-gray-300 rounded transition duration-150 
+                  ease-in-out focus:text-gray-700 focus:bg-white border focus:border-slate-600'/> */}
               <div className='flex space-x-6 '>
                 <div>
                     <p className='w-full text-lg font-semibold'>Beds</p>

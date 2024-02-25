@@ -2,8 +2,8 @@ import React, { useEffect ,useState } from 'react'
 import { db } from '../firebase.config';
 import { doc, getDoc } from 'firebase/firestore';
 import { toast } from 'react-toastify';
-
 const Contact = ({userRef , listing}) => {
+
     const [landLorde , setLandLorde] = useState(null)
     const [message , setMessage] = useState("")
      function onChange(e) {
@@ -55,6 +55,20 @@ const Contact = ({userRef , listing}) => {
                 type='button '
                 >Send Message</button>
               </a>
+              <br/>
+             {console.log(listing.phone ,listing.name )}
+              {listing.phone && (
+                <a href={`https://wa.me/${listing.phone}?text=${encodeURIComponent(`${message}`)}`}>
+                  <button 
+                    className='px-7 py-3 bg-blue-600 text-white text-sm uppercase shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-800 focus:shadow-lg active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out w-full text-center'
+                    type='button'
+                    style={{ cursor: 'pointer' }} // Set cursor to pointer when hovering over the button
+                  >
+                    Contact Landlord via WhatsApp
+                  </button>
+                </a>
+                    )}
+
             </div>
       )}
 

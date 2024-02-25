@@ -9,8 +9,8 @@ import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import {toast} from 'react-toastify'
 const SignUp = () => {
   const [showPassword,setShowPassword] = useState(false);
-  const [formData , setFormData] =useState({name:"",email : "", password :""});
-  const {name,email, password} = formData;
+  const [formData , setFormData] =useState({name:"",email : "", password :"" });
+  const {name,email, password , phone} = formData;
   const  navigate = useNavigate();
   function onchange(e){
     setFormData((prevState)=>({
@@ -60,7 +60,7 @@ const SignUp = () => {
           <input type='email' id='email' value={email} placeholder='Email address' onChange={onchange}
           className='w-full px-4 py-2 text-xl text-gray-700 bg-white border
            border-gray-300 rounded transition ease-in-out mb-6'/>
-
+           
            <div className='relative mb-6'>
            <input type={showPassword ? `text` : `password`} id='password' value={password} placeholder='Password' onChange={onchange} 
           className='w-full px-4 py-2 text-xl text-gray-700 bg-white border
