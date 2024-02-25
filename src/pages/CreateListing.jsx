@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState , useCallback } from 'react'
 import {toast} from 'react-toastify'
 import Spinner from '../components/Spinner';
 import { getAuth} from "firebase/auth";
@@ -7,24 +7,23 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/
 import { collection, serverTimestamp, addDoc } from 'firebase/firestore';
 import { db } from '../firebase.config';
 import { useNavigate } from 'react-router-dom';
-// import PhoneInput from 'react-phone-number-input';
-// import 'react-phone-number-input/style.css';
+ import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 const CreateListing = () => {
     const auth = getAuth();
     const navigate = useNavigate();
     const [geolocationEnabled, setGeolocationEnabled] = useState(true);  
     const [loading , setLoading] = useState(false);
     const [number, setNumber] = useState('');
-    const onChangeNumber = (value) => {
-      const phoneNumber = value.target.value;
+    const onChangeNumber = useCallback((phoneNumber) => {
       setNumber(phoneNumber);
       setFormData({ ...formData, phone: phoneNumber });
-  };
+  }, []);
   
     const [formData , setFormData] = useState({
         type:"rent",
         name:"",
-        phone:+number,
+        phone:number,
         bedrooms:1,
         bathrooms:1,
         parking:false,
@@ -218,14 +217,15 @@ async function onSubmit (e){
               className='w-full px-4 py-2 text-xl text-gray-700 
               bg-white border-gray-300 rounded transition duration-150 
               ease-in-out focus:text-gray-700 focus:bg-white border focus:border-slate-600'/>
-{/* <PhoneInput
-                type='text'
-              id='phone'
-              placeholder="Enter phone number"
-              value={+number}
-              onChange={onChangeNumber}
-            /> */}
-          <p className='text-lg mt-6 font-semibold'>Phone Number</p>
+
+            <p className='text-lg mt-6 font-semibold'>Phone Number</p>
+            <PhoneInput
+                id='phone'
+                placeholder="Enter phone number"
+                value={phone}
+                onChange={onChangeNumber}
+            />
+          {/* <p className='text-lg mt-6 font-semibold'>Phone Number</p>
                 
             { <input type='text'
              id='phone'
@@ -238,7 +238,7 @@ async function onSubmit (e){
               required
               className='w-full px-4 py-2 text-xl text-gray-700 
               bg-white border-gray-300 rounded transition duration-150 
-              ease-in-out focus:text-gray-700 focus:bg-white border focus:border-slate-600'/> }
+              ease-in-out focus:text-gray-700 focus:bg-white border focus:border-slate-600'/> } */}
               <div className='flex space-x-6 '>
                 <div>
 
