@@ -7,14 +7,24 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/
 import { collection, serverTimestamp, addDoc } from 'firebase/firestore';
 import { db } from '../firebase.config';
 import { useNavigate } from 'react-router-dom';
+// import PhoneInput from 'react-phone-number-input';
+// import 'react-phone-number-input/style.css';
 const CreateListing = () => {
     const auth = getAuth();
     const navigate = useNavigate();
     const [geolocationEnabled, setGeolocationEnabled] = useState(true);  
     const [loading , setLoading] = useState(false);
+    const [number, setNumber] = useState('');
+    const onChangeNumber = (value) => {
+      const phoneNumber = value.target.value;
+      setNumber(phoneNumber);
+      setFormData({ ...formData, phone: phoneNumber });
+  };
+  
     const [formData , setFormData] = useState({
         type:"rent",
         name:"",
+        phone:+number,
         bedrooms:1,
         bathrooms:1,
         parking:false,
@@ -28,7 +38,7 @@ const CreateListing = () => {
         longitude:0,
         images:{},
     })
-    const {type , name ,bedrooms ,bathrooms ,parking ,furnished ,address ,description ,offer ,regularPrice ,discountedPrice , latitude ,longitude , images} = formData ; 
+    const {type , name ,bedrooms,phone ,bathrooms ,parking ,furnished ,address ,description ,offer ,regularPrice ,discountedPrice , latitude ,longitude , images} = formData ; 
     function onChange(e){
         let boolean = null;
         if(e.target.value === "true"){
@@ -51,6 +61,7 @@ const CreateListing = () => {
             }))
 
     }
+    
 }
 const key = "9dRlHkI1LHndCwLKVM9wiEkOIOURybqx";
 async function onSubmit (e){
@@ -94,53 +105,52 @@ async function onSubmit (e){
           
           
         }    
-              async function storeImage(image){
-            return new Promise((resolve, reject)=>{
-                const  storage  = getStorage();
-                const filename = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`;
-                const storageRef = ref(storage, filename);
-                const uploadTask = uploadBytesResumable(storageRef, image); 
-        // Register three observers:
-        // 1. 'state_changed' observer, called any time the state changes
-        // 2. Error observer, called on failure
-        // 3. Completion observer, called on successful completion
-        uploadTask.on('state_changed', 
-        (snapshot) => {
-        // Observe state change events such as progress, pause, and resume
-        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log('Upload is ' + progress + '% done');
-        switch (snapshot.state) {
-        case 'paused':
-        console.log('Upload is paused');
-        break;
-        case 'running':
-        console.log('Upload is running');
-        break;
-        }
-        }, 
-        (error) => {
-        // Handle unsuccessful uploads
-        reject(error)
-        }, 
-        () => {
-        // Handle successful uploads on complete
-        // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-        resolve( downloadURL);
-        });
-        }
-        );
+        async function storeImage(image) {
+            return new Promise((resolve, reject) => {
+              const storage = getStorage();
+              const filename = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`;
+              const storageRef = ref(storage, filename);
+              const uploadTask = uploadBytesResumable(storageRef, image);
+              uploadTask.on(
+                "state_changed",
+                (snapshot) => {
+                  // Observe state change events such as progress, pause, and resume
+                  // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                  const progress =
+                    (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                  console.log("Upload is " + progress + "% done");
+                  switch (snapshot.state) {
+                    case "paused":
+                      console.log("Upload is paused");
+                      break;
+                    case "running":
+                      console.log("Upload is running");
+                      break;
+                  }
+                },
+                (error) => {
+                  // Handle unsuccessful uploads
+                  reject(error);
+                },
+                () => {
+                  // Handle successful uploads on complete
+                  // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+                  getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                    resolve(downloadURL);
+                  });
+                }
+              );
             });
-
-        }
-        const imgUrls = await Promise.all(
+          }
+      
+          const imgUrls = await Promise.all(
             [...images].map((image) => storeImage(image))
           ).catch((error) => {
             setLoading(false);
             toast.error("Images not uploaded");
             return;
           });
+      
         
             console.log(imgUrls)
 
@@ -208,8 +218,30 @@ async function onSubmit (e){
               className='w-full px-4 py-2 text-xl text-gray-700 
               bg-white border-gray-300 rounded transition duration-150 
               ease-in-out focus:text-gray-700 focus:bg-white border focus:border-slate-600'/>
+{/* <PhoneInput
+                type='text'
+              id='phone'
+              placeholder="Enter phone number"
+              value={+number}
+              onChange={onChangeNumber}
+            /> */}
+          <p className='text-lg mt-6 font-semibold'>Phone Number</p>
+                
+            { <input type='text'
+             id='phone'
+              value={number}
+              onChange={onChangeNumber}
+              placeholder='Phone Number'
+              pattern="[0-9]*" 
+             maxLength="32"
+              minLength="10"
+              required
+              className='w-full px-4 py-2 text-xl text-gray-700 
+              bg-white border-gray-300 rounded transition duration-150 
+              ease-in-out focus:text-gray-700 focus:bg-white border focus:border-slate-600'/> }
               <div className='flex space-x-6 '>
                 <div>
+
                     <p className='w-full text-lg font-semibold'>Beds</p>
                     <input type='number'
                     id='bedrooms'
@@ -335,7 +367,7 @@ async function onSubmit (e){
               value={description}
               onChange={onChange}
               placeholder='Description'
-               maxLength="32"
+               maxLength="500"
               minLength="10"
               required
               className='w-full px-4 py-2 text-xl text-gray-700 
