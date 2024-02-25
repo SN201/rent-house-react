@@ -7,5 +7,16 @@ export default defineConfig({
   resolve: {
     mainFields: [],
     
-  },
+  }, build: {
+    outDir: 'my-custom-output-directory'
+  },rollupOptions: {
+    output: {
+      sourcemapExcludeSources: true,
+      globals: {
+        react: 'React',
+        'react-phone-number-input': 'PhoneNumberInput',
+      }
+  }
+},
+  
 })
