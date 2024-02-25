@@ -13,10 +13,17 @@ const EditListing = () => {
     const [geolocationEnabled, setGeolocationEnabled] = useState(true);  
     const [loading , setLoading] = useState(false);
     const [listing , setListing] = useState(null);
+    const [number, setNumber] = useState('');
+    const onChangeNumber = (value) => {
+      const phoneNumber = value.target.value;
+      setNumber(phoneNumber);
+      setFormData({ ...formData, phone: phoneNumber });
+  };
     const [formData , setFormData] = useState({
         type:"rent",
         name:"",
         bedrooms:1,
+        phone:+number,
         bathrooms:1,
         parking:false,
         furnished:false,
@@ -243,6 +250,20 @@ async function onSubmit (e){
               className='w-full px-4 py-2 text-xl text-gray-700 
               bg-white border-gray-300 rounded transition duration-150 
               ease-in-out focus:text-gray-700 focus:bg-white border focus:border-slate-600'/>
+              <br/>
+               <p className='text-lg mt-6 font-semibold'>Phone Number</p>
+                <input type='text'
+                 id='phone'
+                  value={number}
+                  onChange={onChangeNumber}
+                  placeholder='Phone Number'
+                  pattern="[0-9]*" 
+                 maxLength="32"
+                  minLength="10"
+                  required
+                  className='w-full px-4 py-2 text-xl text-gray-700 
+                  bg-white border-gray-300 rounded transition duration-150 
+                  ease-in-out focus:text-gray-700 focus:bg-white border focus:border-slate-600'/>
               <div className='flex space-x-6 '>
                 <div>
                     <p className='w-full text-lg font-semibold'>Beds</p>
